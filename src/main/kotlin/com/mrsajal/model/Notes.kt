@@ -19,6 +19,12 @@ data class EditNoteParams(
 )
 
 @Serializable
+data class GetNotesParams(
+    val userId: String,
+    val noteId: String
+)
+
+@Serializable
 data class NoteResponse(
     val success: Boolean,
     val note: NotesEntity? = null,

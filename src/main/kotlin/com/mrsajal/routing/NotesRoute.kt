@@ -1,10 +1,12 @@
 package com.mrsajal.routing
 
 import com.mrsajal.model.EditNoteParams
+import com.mrsajal.model.GetNotesParams
 import com.mrsajal.model.InsertNoteParams
 import com.mrsajal.model.NoteResponse
 import com.mrsajal.repository.notes.NotesRepository
 import com.mrsajal.utils.getStringParameter
+import io.ktor.client.engine.*
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
@@ -84,17 +86,25 @@ fun Routing.notesRouting() {
                     return@post
                 }
             }
-            delete("/{noteId}") {
+            delete("/delete") {
                 try {
-                    val noteId = call.getStringParameter(name = "noteId")
-                    val userId = call.getStringParameter(name = "userId")
-                    val result = repository.deleteNote(userId = userId, noteId = noteId)
+                    val params = call.receiveNullable<GetNotesParams>()
+                    if (params == null) {
+                        call.respond(
+                            status = HttpStatusCode.BadRequest,
+                            message = NoteResponse(
+                                success = false,
+                                message = "Could not parse notes parameters"
+                            )
+                        )
+                        return@delete
+                    }
+                    val result = repository.deleteNote(userId = params.userId, noteId = params.noteId)
+
                     call.respond(
                         status = result.code,
                         message = result.data
                     )
-                } catch (badRequestError: BadRequestException) {
-                    return@delete
                 } catch (anyError: Throwable) {
                     call.respond(
                         status = HttpStatusCode.InternalServerError,
@@ -105,12 +115,20 @@ fun Routing.notesRouting() {
                     )
                 }
             }
-            get("/{noteId}") {
+            get("/fetch") {
                 try {
-                    val noteId = call.getStringParameter("noteId")
-                    val userId = call.getStringParameter("userId")
-
-                    val result = repository.getNoteById(userId, noteId)
+                    val params = call.receiveNullable<GetNotesParams>()
+                    if (params == null) {
+                        call.respond(
+                            status = HttpStatusCode.BadRequest,
+                            message = NoteResponse(
+                                success = false,
+                                message = "Could not parse notes parameters"
+                            )
+                        )
+                        return@get
+                    }
+                    val result = repository.getNoteById(params.userId, params.noteId)
                     call.respond(
                         status = result.code,
                         message = result.data
@@ -128,7 +146,7 @@ fun Routing.notesRouting() {
                 }
             }
         }
-        route("/notes") {
+        route("/notes/all") {
             get("/{userId}") {
                 try {
                     val userId = call.parameters["userId"]!!
