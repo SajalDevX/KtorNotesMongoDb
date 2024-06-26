@@ -150,7 +150,10 @@ fun Routing.notesRouting() {
             get("/{userId}") {
                 try {
                     val userId = call.parameters["userId"]!!
-                    val result = repository.getUserNotes(userId)
+                    val page = call.request.queryParameters["page"]?.toIntOrNull() ?: 0
+                    val limit = call.request.queryParameters["limit"]?.toIntOrNull() ?: 10
+
+                    val result = repository.getUserNotes(userId,page,limit)
                     call.respond(
                         status = result.code,
                         message = result.data

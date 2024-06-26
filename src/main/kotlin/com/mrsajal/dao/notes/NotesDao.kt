@@ -5,5 +5,5 @@ interface NotesDao {
     suspend fun editNote(userId: String, noteId: String, updatedNote: NotesEntity): Boolean
     suspend fun getNoteById(userId: String, noteId: String): NotesEntity?
     suspend fun deleteNote(userId: String, noteId: String): Boolean
-    suspend fun getAllNotes(userId: String): List<NotesEntity>
+    suspend fun getAllNotes(userId: String, pageNumber: Int, pageSize: Int): List<NotesEntity>
 }

@@ -5,6 +5,7 @@ import com.mongodb.client.model.UpdateOptions
 import com.mongodb.client.model.Updates
 import com.mrsajal.dao.users.UserEntity
 import org.bson.Document
+import org.litote.kmongo.MongoOperator
 import org.litote.kmongo.coroutine.CoroutineDatabase
 
 
@@ -56,9 +57,14 @@ class NotesDaoImpl(
         return result.matchedCount > 0
     }
 
-    override suspend fun getAllNotes(userId: String): List<NotesEntity> {
+    override suspend fun getAllNotes(userId: String, pageNumber: Int, pageSize: Int): List<NotesEntity> {
 
-        val notes = users.findOne(Filters.eq("_id", userId))
-        return notes?.notes ?: emptyList()
+        val user = users.findOne(Filters.eq("_id", userId)) ?: return emptyList()
+        val startIndex = pageNumber * pageSize
+        val paginatedNotes = user.notes.asSequence()
+            .drop(startIndex)
+            .take(pageSize)
+            .toList()
+        return paginatedNotes
     }
 }

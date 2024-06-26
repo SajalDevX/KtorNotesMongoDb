@@ -9,10 +9,10 @@ import com.mrsajal.utils.Response
 import io.ktor.http.*
 
 class NotesRepositoryImpl(
-    private val notesDao:NotesDao
+    private val notesDao: NotesDao
 ) : NotesRepository {
     override suspend fun insertNote(params: InsertNoteParams): Response<NoteResponse> {
-        val note = notesDao.insertNotes(params.userId,params.toNotesEntity())
+        val note = notesDao.insertNotes(params.userId, params.toNotesEntity())
         return if (!note) {
             Response.Error(
                 code = HttpStatusCode.InternalServerError,
@@ -32,7 +32,7 @@ class NotesRepositoryImpl(
     }
 
     override suspend fun editNote(params: EditNoteParams): Response<NoteResponse> {
-        val edit = notesDao.editNote(params.userId,params.noteId,params.toNotesEntity())
+        val edit = notesDao.editNote(params.userId, params.noteId, params.toNotesEntity())
         return if (!edit) {
             Response.Error(
                 code = HttpStatusCode.InternalServerError,
@@ -51,8 +51,8 @@ class NotesRepositoryImpl(
         }
     }
 
-    override suspend fun deleteNote(userId: String,noteId: String): Response<NoteResponse> {
-        val deleted = notesDao.deleteNote(userId,noteId)
+    override suspend fun deleteNote(userId: String, noteId: String): Response<NoteResponse> {
+        val deleted = notesDao.deleteNote(userId, noteId)
         return if (!deleted) {
             Response.Error(
                 code = HttpStatusCode.InternalServerError,
@@ -71,8 +71,8 @@ class NotesRepositoryImpl(
         }
     }
 
-    override suspend fun getUserNotes(userId: String): Response<NoteResponse> {
-        val listOfNotes = notesDao.getAllNotes(userId)
+    override suspend fun getUserNotes(userId: String, pageNumber: Int, pageSize: Int): Response<NoteResponse> {
+        val listOfNotes = notesDao.getAllNotes(userId, pageNumber, pageSize)
         return if (listOfNotes.isEmpty()) {
             Response.Error(
                 code = HttpStatusCode.InternalServerError,
@@ -92,8 +92,8 @@ class NotesRepositoryImpl(
         }
     }
 
-    override suspend fun getNoteById(userId: String,noteId: String): Response<NoteResponse> {
-        val note = notesDao.getNoteById(userId,noteId)
+    override suspend fun getNoteById(userId: String, noteId: String): Response<NoteResponse> {
+        val note = notesDao.getNoteById(userId, noteId)
         return if (note == null) {
             Response.Error(
                 code = HttpStatusCode.InternalServerError,

@@ -9,6 +9,6 @@ interface NotesRepository {
     suspend fun insertNote(params: InsertNoteParams):Response<NoteResponse>
     suspend fun editNote(params: EditNoteParams):Response<NoteResponse>
     suspend fun deleteNote(userId: String,noteId:String):Response<NoteResponse>
-    suspend fun getUserNotes(userId: String):Response<NoteResponse>
+    suspend fun getUserNotes(userId: String, pageNumber: Int, pageSize: Int):Response<NoteResponse>
     suspend fun getNoteById(userId: String,noteId:String): Response<NoteResponse>
 }
