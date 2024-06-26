@@ -71,6 +71,7 @@ class NotesRepositoryImpl(
         }
     }
 
+
     override suspend fun getUserNotes(userId: String, pageNumber: Int, pageSize: Int): Response<NoteResponse> {
         val listOfNotes = notesDao.getAllNotes(userId, pageNumber, pageSize)
         return if (listOfNotes.isEmpty()) {
