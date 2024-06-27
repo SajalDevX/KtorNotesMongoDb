@@ -11,6 +11,7 @@ import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.plugins.*
+import io.ktor.server.plugins.ContentTransformationException
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
@@ -117,8 +118,9 @@ fun Routing.notesRouting() {
             }
             get("/fetch") {
                 try {
-                    val params = call.receiveNullable<GetNotesParams>()
-                    if (params == null) {
+                    val userId = call.parameters["userId"]
+                    val noteId = call.parameters["noteId"]
+                    if (noteId == null || userId == null) {
                         call.respond(
                             status = HttpStatusCode.BadRequest,
                             message = NoteResponse(
@@ -128,12 +130,15 @@ fun Routing.notesRouting() {
                         )
                         return@get
                     }
-                    val result = repository.getNoteById(params.userId, params.noteId)
+                    val result = repository.getNoteById(userId, noteId)
                     call.respond(
                         status = result.code,
                         message = result.data
                     )
                 } catch (badRequestError: BadRequestException) {
+                    return@get
+                } catch (e: ContentTransformationException) {
+                    call.respond(HttpStatusCode.BadRequest, "Invalid request format")
                     return@get
                 } catch (anyError: Throwable) {
                     call.respond(
@@ -146,28 +151,30 @@ fun Routing.notesRouting() {
                 }
             }
         }
-        route("/notes/all") {
-            get("/{userId}") {
-                try {
-                    val userId = call.parameters["userId"]!!
-                    val page = call.request.queryParameters["page"]?.toIntOrNull() ?: 0
-                    val limit = call.request.queryParameters["limit"]?.toIntOrNull() ?: 10
+        route("/notes") {
+            route("/all") {
+                get("/{userId}") {
+                    try {
+                        val userId = call.parameters["userId"]!!
+                        val page = call.request.queryParameters["page"]?.toIntOrNull() ?: 0
+                        val limit = call.request.queryParameters["limit"]?.toIntOrNull() ?: 10
 
-                    val result = repository.getUserNotes(userId,page,limit)
-                    call.respond(
-                        status = result.code,
-                        message = result.data
-                    )
-                } catch (badRequestError: BadRequestException) {
-                    return@get
-                } catch (anyError: Throwable) {
-                    call.respond(
-                        status = HttpStatusCode.InternalServerError,
-                        message = NoteResponse(
-                            success = false,
-                            message = "An unexpected error has occurred, try again!"
+                        val result = repository.getUserNotes(userId, page, limit)
+                        call.respond(
+                            status = result.code,
+                            message = result.data
                         )
-                    )
+                    } catch (badRequestError: BadRequestException) {
+                        return@get
+                    } catch (anyError: Throwable) {
+                        call.respond(
+                            status = HttpStatusCode.InternalServerError,
+                            message = NoteResponse(
+                                success = false,
+                                message = "An unexpected error has occurred, try again!"
+                            )
+                        )
+                    }
                 }
             }
         }
